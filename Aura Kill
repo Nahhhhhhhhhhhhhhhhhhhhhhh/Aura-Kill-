@@ -1,0 +1,59 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Create a ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create a Frame for UI (Draggable)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 50)
+frame.Position = UDim2.new(0.4, 0, 0.8, 0)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.Active = true
+frame.Draggable = true -- Makes the UI moveable
+frame.Parent = screenGui
+
+-- Create a Kill Aura Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, 0, 1, 0)
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+button.Text = "Activate Kill Aura"
+button.Parent = frame
+
+-- Function to Check if an NPC is an Enemy
+local function isEnemy(target)
+    -- Change "Enemies" to the actual folder containing NPCs
+    if target.Parent and target.Parent:IsA("Model") and target.Parent.Parent and target.Parent.Parent.Name == "Enemies" then
+        return true
+    end
+    return false
+end
+
+-- Function to Kill Nearby Enemies
+local function killNearbyEnemies()
+    local range = 10 -- Radius for the kill aura
+    for _, npc in pairs(workspace:GetDescendants()) do
+        if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+            local humanoid = npc:FindFirstChild("Humanoid")
+            local rootPart = npc:FindFirstChild("HumanoidRootPart")
+
+            if humanoid and rootPart and isEnemy(npc) then
+                local distance = (character.PrimaryPart.Position - rootPart.Position).magnitude
+                
+                if distance <= range then
+                    humanoid.Health = 0 -- Kill the NPC
+                    print(npc.Name .. " has been eliminated!")
+                end
+            end
+        end
+    end
+end
+
+-- Button Click Event
+button.MouseButton1Click:Connect(function()
+    killNearbyEnemies()
+    button.Text = "Kill Aura Activated!"
+    wait(1)
+    button.Text = "Activate Kill Aura"
+end)
